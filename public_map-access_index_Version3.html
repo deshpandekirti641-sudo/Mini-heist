@@ -1,0 +1,75 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Map Access — Mini Gang Wars</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <style>
+    body{font-family:Arial,Helvetica,sans-serif;margin:24px}
+    .map{border:1px solid #ddd;padding:12px;border-radius:8px;margin-bottom:12px}
+    label{display:block;margin-top:8px}
+    input[type=text]{width:100%;padding:8px}
+    button{padding:8px 12px;margin-top:8px}
+    .note{color:#666;font-size:13px}
+  </style>
+</head>
+<body>
+  <h1>Mini Gang Wars — Map Access</h1>
+  <div id="maps"></div>
+  <script>
+    async function listMaps(){
+      const res = await fetch('/api/maps');
+      const data = await res.json();
+      const container = document.getElementById('maps');
+      container.innerHTML = '';
+      data.maps.forEach(m=>{
+        const div = document.createElement('div');
+        div.className='map';
+        div.innerHTML = '<h2>'+m.title+(m.premium?' (Premium)':'')+'</h2>' +
+          '<p class="note">Center: '+JSON.stringify(m.center)+'</p>';
+        if(m.premium){
+          div.innerHTML += `
+            <p><strong>Price:</strong> See manifest (pay UPI: 8976096360-2@axl)</p>
+            <label>Enter your userId (unique): <input id="user-${m.id}" type="text" /></label>
+            <label>Enter UTR/Transaction ID: <input id="utr-${m.id}" type="text" /></label>
+            <button onclick="submitUTR('${m.id}')">Submit UTR</button>
+            <p id="status-${m.id}" class="note"></p>
+            <button onclick="checkAccess('${m.id}')">Check Access</button>
+            <p id="download-${m.id}"></p>
+          `;
+        } else {
+          div.innerHTML += `<p><em>Free map — streamed via tiles.</em></p>`;
+        }
+        container.appendChild(div);
+      });
+    }
+
+    async function submitUTR(mapId){
+      const userId = document.getElementById('user-'+mapId).value.trim();
+      const utr = document.getElementById('utr-'+mapId).value.trim();
+      if(!userId || !utr){ alert('userId and utr required'); return; }
+      const res = await fetch('/api/maps/'+mapId+'/purchase', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ userId, utr, upiId: '8976096360-2@axl' })
+      });
+      const json = await res.json();
+      document.getElementById('status-'+mapId).textContent = JSON.stringify(json);
+    }
+
+    async function checkAccess(mapId){
+      const userId = document.getElementById('user-'+mapId).value.trim();
+      if(!userId){ alert('userId required'); return; }
+      const res = await fetch('/api/maps/'+mapId+'/access?userId='+encodeURIComponent(userId));
+      const json = await res.json();
+      if(json.access){
+        document.getElementById('download-'+mapId).innerHTML = 'Access granted. Download: <a href="'+json.downloadUrl+'">'+json.downloadUrl+'</a> or use token: '+json.accessToken;
+      } else {
+        document.getElementById('download-'+mapId).textContent = 'No access yet. Pending verification.';
+      }
+    }
+
+    listMaps();
+  </script>
+</body>
+</html>

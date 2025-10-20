@@ -1,0 +1,38 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Admin Panel — Mini Gang Wars</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <style>body{font-family:Arial,Helvetica,sans-serif;margin:24px} table{width:100%;border-collapse:collapse}td,th{border:1px solid #ddd;padding:8px}</style>
+</head>
+<body>
+  <h1>Admin — Pending Payments</h1>
+  <p>Provide ADMIN API KEY in header when verifying. (Set ADMIN_API_KEY env var on server.)</p>
+  <label>Admin Key: <input id="key" type="text" /></label>
+  <button onclick="loadPending()">Load Pending</button>
+  <div id="list"></div>
+
+  <script>
+    async function loadPending(){
+      const res = await fetch('/api/internal/payments/pending'); // optional internal endpoint - implement server-side if needed
+      if(res.status===404){ document.getElementById('list').innerText = 'No internal endpoint. Use scripts/verifyPayment.js or POST /api/maps/:mapId/verify with header x-admin-key.'; return; }
+      const data = await res.json();
+      const list = document.getElementById('list');
+      list.innerHTML = '<table><tr><th>_id</th><th>userId</th><th>mapId</th><th>utr</th><th>amount</th><th>action</th></tr>' + data.map(p=>'<tr><td>'+p._id+'</td><td>'+p.userId+'</td><td>'+p.mapId+'</td><td>'+p.utr+'</td><td>'+p.amount+'</td><td><button onclick="verify(\''+p._id+'\',true)">Verify</button> <button onclick="verify(\''+p._id+'\',false)">Reject</button></td></tr>').join('') + '</table>';
+    }
+
+    async function verify(paymentId,approve){
+      const key = document.getElementById('key').value.trim();
+      if(!key){ alert('Admin key required in this demo'); return; }
+      const res = await fetch('/api/maps/delhi3d/verify', {
+        method:'POST',
+        headers: {'Content-Type':'application/json','x-admin-key':key},
+        body: JSON.stringify({ paymentId, verify: approve })
+      });
+      const json = await res.json();
+      alert(JSON.stringify(json));
+    }
+  </script>
+</body>
+</html>

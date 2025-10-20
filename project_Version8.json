@@ -1,0 +1,50 @@
+{
+  "name": "mini-gang-wars-project",
+  "version": "3.0.0",
+  "description": "Manifest for Mini Gang Wars — online-first mini-GTA for India. Mumbai (free) + Delhi (premium, INR 30). Streaming LOD tiles, purchase flow, and admin control.",
+  "identity": {
+    "projectId": "mgw-india-2025",
+    "projectTitle": "Mini Gang Wars — India",
+    "owner": "deshpandekirti641-sudo",
+    "engine": "three.js (client), express (server)",
+    "primaryLanguage": "javascript"
+  },
+  "maps": {
+    "mumbai3d": {
+      "id": "mumbai-3d-v1",
+      "title": "Mumbai (3D) — Transit & Infrastructure",
+      "premium": false,
+      "assetsPath": "public/assets/maps/mumbai3d/",
+      "center": { "lat": 19.0760, "lon": 72.8777 }
+    },
+    "delhi3d": {
+      "id": "delhi-3d-v1",
+      "title": "Delhi (3D) — Premium",
+      "premium": true,
+      "price": { "amount": 30, "currency": "INR" },
+      "paymentInstructions": {
+        "upi": "8976096360-2@axl",
+        "note": "Send exactly INR 30; submit UTR/Tx ID on access page. UTRs are one-time use only.",
+        "supportEmail": "deshpandekirti641@gmail.com"
+      },
+      "assetsPath": "public/assets/maps/delhi3d/",
+      "center": { "lat": 28.7041, "lon": 77.1025 }
+    }
+  },
+  "routes": {
+    "apiBase": "/api",
+    "endpoints": {
+      "listMaps": "/api/maps",
+      "manifest": "/api/maps/:mapId/manifest",
+      "tile": "/api/maps/:mapId/tiles/:z/:x/:y",
+      "purchase": "/api/maps/:mapId/purchase",
+      "verify": "/api/maps/:mapId/verify",
+      "access": "/api/maps/:mapId/access",
+      "download": "/api/maps/:mapId/download"
+    }
+  },
+  "clientBudget": {
+    "maxClientMB": 400,
+    "notes": "Streaming tiles & CDN recommended; client should download only necessary assets on demand."
+  }
+}
